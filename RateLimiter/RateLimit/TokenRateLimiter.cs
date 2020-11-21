@@ -32,15 +32,22 @@ namespace RateLimiter.RateLimit
             if (res != null)
             {
                 var (token, timestamp) = res.Value;
+                var nextRefillTiming = timestamp.AddSeconds(_refillInterval);
 
-                if (current >= timestamp.AddSeconds(_refillInterval) && _maximumToken > token)
+                if (token == 0 && current < nextRefillTiming) return true;
+
+                // refill and update timestamp
+                if (current >= nextRefillTiming && _maximumToken > token)
                 {
-                    token = token + _refillToken > _maximumToken
+                    var span = current.Subtract(timestamp);
+                    var diff = (int) span.TotalSeconds / _refillInterval;
+                    
+                    token = token + _refillToken * diff > _maximumToken
                         ? _maximumToken
                         : token + _refillToken;
-                }
 
-                if (token == 0) return true;
+                    timestamp = current;
+                }
 
                 await _repository.PutTokenPayload(userName, token - 1, timestamp);
             }
