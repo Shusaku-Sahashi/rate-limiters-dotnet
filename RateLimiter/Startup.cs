@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RateLimiter.Middleware;
 using RateLimiter.RateLimit;
+using RateLimiter.Repository.Redis;
 
 namespace RateLimiter
 {
@@ -15,6 +17,7 @@ namespace RateLimiter
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IRateLimitPolicy, TokenRateLimiter>();
+            services.AddSingleton<RedisUserTokenRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -30,6 +33,7 @@ namespace RateLimiter
             app.Run(async context =>
             {
                 // TODO: write path through request to back-end server.
+                await context.Response.WriteAsync("OK");
             });
         }
     }

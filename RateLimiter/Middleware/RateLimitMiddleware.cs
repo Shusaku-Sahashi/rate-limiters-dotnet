@@ -20,7 +20,8 @@ namespace RateLimiter.Middleware
         public async Task Invoke(HttpContext context)
         {
             var header = context.Request.Headers;
-            if (_rateLimitPolicy.DoesThrottle(header["user"]))
+            string user = header["User"];
+            if (user == null || await _rateLimitPolicy.DoesThrottle(user))
             {
                 context.Response.StatusCode = (int) HttpStatusCode.TooManyRequests; 
                 return;
